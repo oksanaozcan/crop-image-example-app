@@ -5,24 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Image;
 use App\Http\Requests\StoreImageRequest;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 
 class ImageController extends Controller
 {   
-  public function store(StoreImageRequest $request)
-  {
-    $data = $request->validated();
-
-    $image = $request->file('image');
-    
-    $filePath = $image->store('images', 'public');
-    
-    $imageModel = Image::create([
-      'filename' => $image->getClientOriginalName(),
-      'path' => $filePath,
-      'url' => url('/storage/' . $filePath),
-      'user_id' => auth()->id(),
+  public function store(Request $request)
+  {    
+    $request->validate([
+      'croppedImage' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Example validation rules
     ]);
+ 
+    $path = $request->file('croppedImage')->store('images'); // Store in the 'images' directory  
 
-  return response()->json(['message' => 'Image uploaded successfully', 'data' => $imageModel], 201);
+    return response()->json(['path' => $path], 200); // Return a response with the stored image path
   }    
 }
